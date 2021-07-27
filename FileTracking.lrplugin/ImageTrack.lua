@@ -53,20 +53,22 @@ LrTasks.startAsyncTask(function ()
         logger:trace("Couldn't open file: "..err)
     else
         logger:trace("Opened file")
-        local exclude_indices = {}
+        local exclude_indices = {1619, 1621, 1624, 1636, 1643, 1695, 1698, 1702, 1708} -- at least until 8811
         for i,photo in ipairs(photos) do
             -- type of photo is LrPhoto
             -- Check if i is in the list excludedd
             if has_value(exclude_indices, i) == false then
-                if i > 1600 then
+                if i > 8750 and i < 8900 then
                     logger:trace("Processing photo: "..i)
                 end
-                local status, err = processPhoto(outFile, photo)
-                if i % 100 == 0 then
-                    logger:trace(i.." photos processed")
+                if i > 8750 and i < 8900 then
+                    local status, err = processPhoto(outFile, photo)
+                    if i % 100 == 0 then
+                        logger:trace(i.." photos processed")
+                    end
                 end
             else
-                logger:trace("Error processing photo " .. tostring(i) .. ": ".. err)
+                logger:trace("Skipping photo [" .. i .. "]")
             end
         end
         io.close()
