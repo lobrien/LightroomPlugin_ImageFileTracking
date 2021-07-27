@@ -50,8 +50,12 @@ end )
 
 function processPhoto(outFile, photo)
     local folder = photo:getRawMetadata('path') or 'NA'
+    assert(folder ~= nil, "Folder is nil")
     local isAvailable = photo:checkPhotoAvailability() or false
-    local createdTime = photo:getRawMetadata('dateTimeOriginal') or 0
+    assert(isAvailable ~= nil, "isAvailable is nil")
+    local createdTime = photo:getRawMetadata('dateTimeOriginal')
+    if createdTime == nil then createdTime = 0 end
+    assert(createdTime ~= nil, "createdTime is nil")
     outFile:write(folder .. "," .. tostring(isAvailable) .. "," .. tostring(createdTime) .. "\n")
     return true, nil
 end
