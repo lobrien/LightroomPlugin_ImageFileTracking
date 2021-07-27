@@ -14,6 +14,27 @@ local logger = LrLogger('FileTrackerPlugin')
 logger:enable("logfile")
 local log = logger:quickf('info')
 
+local function has_value(tab, val)
+    for i, v in ipairs(tab) do
+        if v == val then
+            return true
+        end
+    end
+    return false
+end
+
+local function processPhoto(outFile, photo)
+    local folder = photo:getRawMetadata('path') or 'NA'
+    assert(folder ~= nil, "Folder is nil")
+    local isAvailable = photo:checkPhotoAvailability() or false
+    assert(isAvailable ~= nil, "isAvailable is nil")
+    local createdTime = photo:getRawMetadata('dateTimeOriginal')
+    if createdTime == nil then createdTime = 0 end
+    assert(createdTime ~= nil, "createdTime is nil")
+    outFile:write(folder .. "," .. tostring(isAvailable) .. "," .. tostring(createdTime) .. "\n")
+    return true, nil
+end
+
 LrTasks.startAsyncTask(function ()
     logger:trace('Starting image processing')
 
@@ -32,10 +53,15 @@ LrTasks.startAsyncTask(function ()
         logger:trace("Couldn't open file: "..err)
     else
         logger:trace("Opened file")
+        local exclude_indices = {}
         for i,photo in ipairs(photos) do
             -- type of photo is LrPhoto
-            local status, err = processPhoto(outFile, photo)
-            if status then
+            -- Check if i is in the list excludedd
+            if has_value(exclude_indices, i) == false then
+                if i > 1600 then
+                    logger:trace("Processing photo: "..i)
+                end
+                local status, err = processPhoto(outFile, photo)
                 if i % 100 == 0 then
                     logger:trace(i.." photos processed")
                 end
@@ -48,14 +74,3 @@ LrTasks.startAsyncTask(function ()
     end
 end )
 
-function processPhoto(outFile, photo)
-    local folder = photo:getRawMetadata('path') or 'NA'
-    assert(folder ~= nil, "Folder is nil")
-    local isAvailable = photo:checkPhotoAvailability() or false
-    assert(isAvailable ~= nil, "isAvailable is nil")
-    local createdTime = photo:getRawMetadata('dateTimeOriginal')
-    if createdTime == nil then createdTime = 0 end
-    assert(createdTime ~= nil, "createdTime is nil")
-    outFile:write(folder .. "," .. tostring(isAvailable) .. "," .. tostring(createdTime) .. "\n")
-    return true, nil
-end
