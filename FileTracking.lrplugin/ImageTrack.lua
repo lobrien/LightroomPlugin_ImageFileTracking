@@ -34,9 +34,13 @@ LrTasks.startAsyncTask(function ()
         logger:trace("Opened file")
         for i,photo in ipairs(photos) do
             -- type of photo is LrPhoto
-            processPhoto(outFile, photo)
-            if i % 100 == 0 then
-                logger:trace(i.." photos processed")
+            local status, err = pcall(processPhoto(outFile, photo))
+            if status then
+                if i % 100 == 0 then
+                    logger:trace(i.." photos processed")
+                end
+            else
+                logger:trace("Error processing photo " .. tostring(i) .. ": ".. err)
             end
         end
         io.close()
@@ -47,5 +51,7 @@ end )
 function processPhoto(outFile, photo)
     local fileName = photo:getFormattedMetadata('fileName')
     local folder = photo:getRawMetadata('path')
-    outFile:write(folder .. "," .. fileName .. "\n")
+    local isAvailable = photo:checkPhotoAvailability()
+    local createdTime = photo:getRawMetadata('dateTimeOriginal')
+    outFile:write(folder .. "," .. tostring(isAvailable) .. "," .. tostring(createdTime) .. "\n")
 end
