@@ -10,33 +10,42 @@ local LrDialogs = import 'LrDialogs'
 local LrDate = import 'LrDate'
 local LrStringUtils = import 'LrStringUtils'
 
-local logger = LrLogger('HelloWorldPlugin')
-logger:enable("print")
+local logger = LrLogger('FileTrackerPlugin')
+logger:enable("logfile")
 local log = logger:quickf('info')
 
 LrTasks.startAsyncTask(function ()
-    log('Starting image processing')
+    logger:trace('Starting image processing')
 
-    local catalog = LrApplication.getCatalog()
+    local catalog = LrApplication.activeCatalog()
 
+    logger:trace('Got catalog')
     --  process all images in catalog
     local photos = catalog:getAllPhotos()
+    logger:trace("Got photos")
     -- create file for writing
-    local outFile = io.open("photo_paths.csv", "w")
-
-    local i = 0
-    for photo in photos do
-        -- type of photo is LrPhoto
-        processPhoto(outFile, photo)
-        i = i + 1
-        if i % 100 == 0 then
-            log.write(i.." photos processed")
+    -- get desktop directory
+    local home = LrPathUtils.getStandardFilePath('desktop')
+    local fname = home .. '/photo_paths.csv'
+    local outFile, err = io.open(fname, "w+")
+    if outFile==nil then
+        logger:trace("Couldn't open file: "..err)
+    else
+        logger:trace("Opened file")
+        for i,photo in ipairs(photos) do
+            -- type of photo is LrPhoto
+            processPhoto(outFile, photo)
+            if i % 100 == 0 then
+                logger:trace(i.." photos processed")
+            end
+        end
+        io.close()
+        logger:trace("Finished processing")
     end
-    io.close()
 end )
 
-local function processPhoto(outFile, photo)
+function processPhoto(outFile, photo)
     local fileName = photo:getFormattedMetadata('fileName')
-    local folder = photo:getFormattedMetadata('folderName')
+    local folder = photo:getRawMetadata('path')
     outFile:write(folder .. "," .. fileName .. "\n")
 end
