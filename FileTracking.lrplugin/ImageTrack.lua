@@ -9,6 +9,7 @@ local LrFileUtils = import 'LrFileUtils'
 local LrDialogs = import 'LrDialogs'
 local LrDate = import 'LrDate'
 local LrStringUtils = import 'LrStringUtils'
+local LrTasks = import 'LrTasks'
 
 local logger = LrLogger('FileTrackerPlugin')
 logger:enable("logfile")
@@ -62,7 +63,10 @@ LrTasks.startAsyncTask(function ()
                     logger:trace("Processing photo: "..i)
                 end
                 if i > 8750 and i < 8900 then
-                    local status, err = processPhoto(outFile, photo)
+                    local status, err = LrTasks.pcall(processPhoto, outFile, photo)
+                    if err ~= nil then
+                        logger:trace(i .. " bad photo")
+                    end
                     if i % 100 == 0 then
                         logger:trace(i.." photos processed")
                     end
