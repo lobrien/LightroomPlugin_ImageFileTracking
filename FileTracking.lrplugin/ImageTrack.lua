@@ -49,14 +49,9 @@ LrTasks.startAsyncTask(function ()
 end )
 
 function processPhoto(outFile, photo)
-    local fileName = photo:getFormattedMetadata('fileName')
-    assert(fileName ~= nil, "Couldn't get fileName")
-    local folder = photo:getRawMetadata('path')
-    assert(folder ~= nil, "Couldn't get folder")
-    local isAvailable = photo:checkPhotoAvailability()
-    assert(isAvailable ~= nil, "Couldn't get photo availability")
-    local createdTime = photo:getRawMetadata('dateTimeOriginal')
-    assert(createdTime ~= nil, "Couldn't get created time")
+    local folder = photo:getRawMetadata('path') or 'NA'
+    local isAvailable = photo:checkPhotoAvailability() or false
+    local createdTime = photo:getRawMetadata('dateTimeOriginal') or 0
     outFile:write(folder .. "," .. tostring(isAvailable) .. "," .. tostring(createdTime) .. "\n")
     return true, nil
 end
