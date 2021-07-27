@@ -64,7 +64,7 @@ LrTasks.startAsyncTask(function ()
                 end
                 if i > 8750 and i < 8900 then
                     local status, err = LrTasks.pcall(processPhoto, outFile, photo)
-                    if err ~= nil then
+                    if status == false then
                         logger:trace(i .. " bad photo")
                     end
                     if i % 100 == 0 then
