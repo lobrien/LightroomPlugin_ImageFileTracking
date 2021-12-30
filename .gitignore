@@ -41,3 +41,5 @@ luac.out
 
 # .vscode folder
 .vscode
+
+.ipynb_checkpoints/
